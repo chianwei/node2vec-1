@@ -85,7 +85,8 @@ def learn_embeddings(walks):
 	'''
 	walks = [list(map(str, walk)) for walk in walks]
 	model = Word2Vec(walks, size=args.dimensions, window=args.window_size, min_count=0, sg=1, workers=args.workers, iter=args.iter)
-	model.wv.save(args.output)
+	model.wv.save(args.output+".vec")
+	model.save(args.output+".model")
 	
 	return
 
