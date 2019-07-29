@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 import random
+from tqdm import tqdm
 
 
 class Graph():
@@ -47,8 +48,10 @@ class Graph():
 		for walk_iter in range(num_walks):
 			print(str(walk_iter+1), '/', str(num_walks))
 			random.shuffle(nodes)
+			pbar = tqdm(total=len(nodes))
 			for node in nodes:
 				walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
+				pbar.update(1)
 
 		return walks
 
@@ -81,18 +84,22 @@ class Graph():
 		is_directed = self.is_directed
 
 		alias_nodes = {}
+		pbar = tqdm(desc="Process nodes: ",total=len(G.nodes()))
 		for node in G.nodes():
 			unnormalized_probs = [G[node][nbr]['weight'] for nbr in sorted(G.neighbors(node))]
 			norm_const = sum(unnormalized_probs)
 			normalized_probs =  [float(u_prob)/norm_const for u_prob in unnormalized_probs]
 			alias_nodes[node] = alias_setup(normalized_probs)
+			pbar.update(1)
 
 		alias_edges = {}
 		triads = {}
 
 		if is_directed:
+			pbar = tqdm(desc="Process edges: ",total=len(G.edges()))
 			for edge in G.edges():
 				alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
+				pbar.update(1)
 		else:
 			for edge in G.edges():
 				alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])

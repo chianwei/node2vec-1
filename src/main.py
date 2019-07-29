@@ -14,6 +14,8 @@ import numpy as np
 import networkx as nx
 import node2vec
 from gensim.models import Word2Vec
+import pickle
+import json
 
 def parse_args():
 	'''
@@ -61,18 +63,31 @@ def parse_args():
 	parser.add_argument('--undirected', dest='undirected', action='store_false')
 	parser.set_defaults(directed=False)
 
+	parser.add_argument('--resume', dest='resume', default=False, action='store_true',
+						help='Generate prob only for another parallel program, resume when load from a generated walk list')
+
+	parser.add_argument('--end2end', default=False, dest='end2end', action='store_true',
+						help='')
+
+	parser.add_argument('--walk-list', nargs='?',
+	                    help='Input generated walk list path for resume')
+
+	parser.add_argument('--probs-graph', nargs='?',
+	                    help='')
+
 	return parser.parse_args()
 
 def read_graph():
 	'''
 	Reads the input network in networkx.
 	'''
-	if args.weighted:
-		G = nx.read_edgelist(args.input, nodetype=int, data=(('weight',float),), create_using=nx.DiGraph())
-	else:
-		G = nx.read_edgelist(args.input, nodetype=int, create_using=nx.DiGraph())
-		for edge in G.edges():
-			G[edge[0]][edge[1]]['weight'] = 1
+	# if args.weighted:
+	# 	G = nx.read_edgelist(args.input, nodetype=str, data=(('weight',float),), create_using=nx.DiGraph())
+	# else:
+	# 	G = nx.read_edgelist(args.input, nodetype=int, create_using=nx.DiGraph())
+	# 	for edge in G.edges():
+	# 		G[edge[0]][edge[1]]['weight'] = 1
+	G = pickle.load(open(args.input,"rb"))
 
 	if not args.directed:
 		G = G.to_undirected()
@@ -94,11 +109,26 @@ def main(args):
 	'''
 	Pipeline for representational learning for all nodes in a graph.
 	'''
-	nx_G = read_graph()
-	G = node2vec.Graph(nx_G, args.directed, args.p, args.q)
-	G.preprocess_transition_probs()
-	walks = G.simulate_walks(args.num_walks, args.walk_length)
-	learn_embeddings(walks)
+	if args.resume == False:
+		print("Reading graph.")
+		nx_G = read_graph()
+		print("Passthrough graph and construct class.")
+		G = node2vec.Graph(nx_G, args.directed, args.p, args.q)
+		print("Generate probs.")
+		G.preprocess_transition_probs()
+		if args.end2end:
+			print("Generate path.")
+			walks = G.simulate_walks(args.num_walks, args.walk_length)
+		else:
+			print("Dump probs.")
+			pickle.dump([G.alias_nodes, G.alias_edges],open(args.probs_graph,"wb"))
+			# nx.write_weighted_edgelist(G, args.probs_graph)
+
+	if args.end2end or args.resume:
+		if args.resume:
+			walks = pickle.load(open(args.walk_list,"rb"))
+		print("Pass to word2vec.")
+		learn_embeddings(walks)
 
 if __name__ == "__main__":
 	args = parse_args()
