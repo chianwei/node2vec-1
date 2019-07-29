@@ -29,7 +29,7 @@ class Graph():
 					walk.append(cur_nbrs[alias_draw(alias_nodes[cur][0], alias_nodes[cur][1])])
 				else:
 					prev = walk[-2]
-					next = cur_nbrs[alias_draw(alias_edges[(prev, cur)][0], 
+					next = cur_nbrs[alias_draw(alias_edges[(prev, cur)][0],
 						alias_edges[(prev, cur)][1])]
 					walk.append(next)
 			else:
@@ -101,9 +101,11 @@ class Graph():
 				alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
 				pbar.update(1)
 		else:
+			pbar = tqdm(desc="Process edges: ", total=len(G.edges()))
 			for edge in G.edges():
 				alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
 				alias_edges[(edge[1], edge[0])] = self.get_alias_edge(edge[1], edge[0])
+				pbar.update(1)
 
 		self.alias_nodes = alias_nodes
 		self.alias_edges = alias_edges
