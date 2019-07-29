@@ -89,8 +89,8 @@ def read_graph():
 	# 		G[edge[0]][edge[1]]['weight'] = 1
 	G = pickle.load(open(args.input,"rb"))
 
-	if not args.directed:
-		G = G.to_undirected()
+	# if not args.directed:
+	# 	G = G.to_undirected()
 
 	return G
 
