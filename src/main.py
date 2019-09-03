@@ -120,8 +120,10 @@ def main(args):
 			print("Generate path.")
 			walks = G.simulate_walks(args.num_walks, args.walk_length)
 		else:
-			print("Dump probs.")
-			pickle.dump([G.alias_nodes, G.alias_edges],open(args.probs_graph,"wb"))
+			print("Dump probs of nodes.")
+			pickle.dump(G.alias_nodes,open(args.probs_graph+".nodes","wb"))
+			print("Dump probs of edges.")
+			pickle.dump(G.alias_edges, open(args.probs_graph+".edges", "wb"))
 			# nx.write_weighted_edgelist(G, args.probs_graph)
 
 	if args.end2end or args.resume:
